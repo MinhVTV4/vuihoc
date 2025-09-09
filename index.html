@@ -26,11 +26,12 @@
         .vote-btn:disabled { cursor: not-allowed; opacity: 0.7; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 50; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; transform: scale(0.95) translateY(10px); transition: transform 0.3s ease; position: relative; }
+        /* ⭐ FIX: Removed 'overflow: hidden' to allow child scrolling */
+        .modal-content { background: white; padding: 0; border-radius: 16px; width: 90%; max-width: 650px; max-height: 90vh; display: flex; flex-direction: column; transform: scale(0.95) translateY(10px); transition: transform 0.3s ease; position: relative; }
         .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
-        .dark .modal-content { background: #1e293b; }
-        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #e2e8f0; border-radius: 9999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; }
-        .dark .modal-close-btn { background: #334155; }
+        .dark .modal-content { background: #0f172a; } /* slate-900 */
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.1); border-radius: 9999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; z-index: 60; }
+        .dark .modal-close-btn { background: rgba(255,255,255,0.1); }
         
         .markdown-content h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; margin-top: 1rem; }
         .dark .markdown-content h3 { color: inherit; }
@@ -38,54 +39,33 @@
         .markdown-content li { margin-bottom: 4px; }
         .markdown-content strong { color: #1e293b; }
         .dark .markdown-content strong { color: #cbd5e1; }
-        .modal-content .markdown-content p { color: #334155; line-height: 1.6; }
-        .dark .modal-content .markdown-content p { color: #cbd5e1; }
-        .modal-content .markdown-content h3 { color: #4338ca; border-bottom: 2px solid #c7d2fe; padding-bottom: 4px; margin-top: 16px; }
-        .dark .modal-content .markdown-content h3 { color: #a5b4fc; border-bottom-color: #4f46e5; }
-        .modal-content .markdown-content strong { color: #4f46e5; }
-        .dark .modal-content .markdown-content strong { color: #c7d2fe; }
-        .modal-content .markdown-content ul { list-style-position: inside; }
-        .modal-content .markdown-content li { color: #475569; margin-bottom: 8px; }
-        .dark .modal-content .markdown-content li { color: #94a3b8; }
-
-        .explanation-header {
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: white;
-            display: flex;
-            align-items: center;
-        }
-        .explanation-header.correct {
-            background-color: #16a34a; /* green-600 */
-        }
-        .explanation-header.incorrect {
-            background-color: #dc2626; /* red-600 */
-        }
-        .explanation-body ul {
-            list-style: none;
-            padding: 0;
-        }
-        /* ⭐ UPDATE: New styles for explanation cards */
-        .explanation-body li {
-            background-color: #fefce8; /* yellow-50 (paper-like) */
-            border-left: 4px solid #f97316; /* orange-500 */
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            line-height: 1.6;
-            color: #3f3f46; /* zinc-700 */
-        }
-        .dark .explanation-body li {
-            background-color: #27211a; /* Darker, warmer paper */
-            border-left-color: #fb923c; /* orange-400 */
-            color: #d4d4d8; /* zinc-300 */
-        }
-        .dark .explanation-body li p {
-             color: #d4d4d8; /* zinc-300 */
-        }
+        
+        .explanation-header { padding: 12px; border-radius: 8px; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: white; display: flex; align-items: center; }
+        .explanation-header.correct { background-color: #16a34a; }
+        .explanation-header.incorrect { background-color: #dc2626; }
+        .explanation-body ul { list-style: none; padding: 0; }
+        .explanation-body li { background-color: #fefce8; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 6px; margin-bottom: 8px; line-height: 1.6; color: #3f3f46; }
+        .dark .explanation-body li { background-color: #27211a; border-left-color: #fb923c; color: #d4d4d8; }
+        .dark .explanation-body li p { color: #d4d4d8; }
+        
+        .modal-header-container { padding: 24px 24px 20px 24px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+        .dark .modal-header-container { background-color: #1e293b; border-bottom-color: #334155; }
+        .modal-header-statement { font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.4; margin-bottom: 12px; }
+        .dark .modal-header-statement { color: #e2e8f0; }
+        .modal-answer-badge { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 9999px; font-size: 1.1rem; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.05em; }
+        .modal-answer-badge.fact { background-color: #16a34a; box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.3); }
+        .modal-answer-badge.fiction { background-color: #dc2626; box-shadow: 0 4px 14px 0 rgba(220, 38, 38, 0.3); }
+        /* ⭐ FIX: Ensured the scrollable area works correctly */
+        .modal-scroll-content { padding: 24px; overflow-y: auto; flex-grow: 1; }
+        .modal-scroll-content .markdown-content h3 { color: #4338ca; border-bottom: 2px solid #e0e7ff; padding-bottom: 4px; margin-top: 16px; margin-bottom: 12px; }
+        .dark .modal-scroll-content .markdown-content h3 { color: #a5b4fc; border-bottom-color: #4f46e5; }
+        .modal-scroll-content .markdown-content p { color: #334155; line-height: 1.7; margin-bottom: 1em;}
+        .dark .modal-scroll-content .markdown-content p { color: #cbd5e1; }
+        .modal-scroll-content .markdown-content strong { color: #4f46e5; }
+        .dark .modal-scroll-content .markdown-content strong { color: #c7d2fe; }
+        .modal-scroll-content .markdown-content ul { list-style-position: inside; }
+        .modal-scroll-content .markdown-content li { color: #475569; margin-bottom: 8px; }
+        .dark .modal-scroll-content .markdown-content li { color: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-center min-h-screen p-4 transition-colors duration-500">
@@ -149,7 +129,6 @@
                 <div id="explanation-container" class="mt-4 hidden">
                     <div id="explanation-content"></div>
                     <div class="flex justify-between items-center mt-4 border-t border-slate-200 dark:border-slate-700 pt-4">
-                        <!-- ⭐ UPDATE: Changed link color to red -->
                         <button onclick="openLearnMoreModal()" class="text-sm font-semibold text-red-600 dark:text-red-500 hover:underline">Tìm hiểu sâu hơn &rarr;</button>
                         <div id="vote-container" class="flex items-center space-x-4">
                             <span class="text-sm text-slate-500 dark:text-slate-400">Hữu ích?</span>
@@ -181,13 +160,16 @@
             <button onclick="closeLearnMoreModal()" class="modal-close-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="text-slate-600 dark:text-slate-300" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
             </button>
-            <h2 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">Khám Phá Sâu Hơn</h2>
-            <div id="modal-spinner" class="flex justify-center my-8"><div class="spinner"></div></div>
-            <div id="modal-content-area" class="markdown-content"></div>
+            <!-- ⭐ FIX: Re-structured modal for stable layout and scrolling -->
+            <div id="modal-header-area"></div>
+            <div id="modal-body-area" class="modal-scroll-content"></div>
+            <div id="modal-spinner-container" class="absolute inset-0 flex justify-center items-center bg-white/80 dark:bg-slate-900/80 rounded-lg hidden">
+                 <div class="spinner"></div>
+            </div>
         </div>
     </div>
     <div id="top-questions-modal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content !p-6">
             <button onclick="closeTopQuestionsModal()" class="modal-close-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="text-slate-600 dark:text-slate-300" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
             </button>
@@ -305,8 +287,9 @@
             falseBtn: document.getElementById('false-btn'),
             nextBtn: document.getElementById('next-btn'),
             learnMoreModal: document.getElementById('learn-more-modal'),
-            modalSpinner: document.getElementById('modal-spinner'),
-            modalContentArea: document.getElementById('modal-content-area'),
+            modalSpinnerContainer: document.getElementById('modal-spinner-container'),
+            modalHeaderArea: document.getElementById('modal-header-area'),
+            modalBodyArea: document.getElementById('modal-body-area'),
             voteContainer: document.getElementById('vote-container'),
             likeBtn: document.getElementById('like-btn'),
             dislikeBtn: document.getElementById('dislike-btn'),
@@ -778,16 +761,30 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
         }
         
         function openLearnMoreModal() {
+            if (!currentQuestion) return;
             domElements.learnMoreModal.classList.add("active");
-            domElements.modalContentArea.innerHTML="";
-            domElements.modalSpinner.style.display="flex";
+            domElements.modalHeaderArea.innerHTML = "";
+            domElements.modalBodyArea.innerHTML = "";
+            domElements.modalSpinnerContainer.style.display = "flex";
+
             generateDetailedExplanation(selectedLevel).then(detailedExplanation => {
-                domElements.modalSpinner.style.display="none";
-                if(detailedExplanation){
-                    domElements.modalContentArea.innerHTML=marked.parse(detailedExplanation)
+                domElements.modalSpinnerContainer.style.display = "none";
+
+                const headerHTML = `
+                    <div class="modal-header-container">
+                        <h3 class="modal-header-statement">${currentQuestion.statement}</h3>
+                        <div class="modal-answer-badge ${currentQuestion.answer ? 'fact' : 'fiction'}">
+                            ${currentQuestion.answer ? 'Sự Thật' : 'Hư Cấu'}
+                        </div>
+                    </div>
+                `;
+                domElements.modalHeaderArea.innerHTML = headerHTML;
+
+                if (detailedExplanation) {
+                    domElements.modalBodyArea.innerHTML = `<div class="markdown-content">${marked.parse(detailedExplanation)}</div>`;
                 } else {
-                    domElements.modalContentArea.innerHTML=`
-                        <div class="text-center">
+                    domElements.modalBodyArea.innerHTML = `
+                        <div class="text-center p-8">
                             <p class="text-red-500 font-semibold">Rất tiếc, không thể tạo nội dung.</p>
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Đã có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.</p>
                             <button onclick="openLearnMoreModal()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold">
@@ -817,7 +814,7 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             }
 
             const chatModel = getGenerativeModel(getAI(app,{backend:new GoogleAIBackend}),{model:"gemini-2.5-flash"});
-            const prompt = `Hãy đóng vai một chuyên gia uyên bác. Dựa trên phát biểu sau: "${currentQuestion.statement}", hãy cung cấp một bài giải thích chi tiết, sâu sắc và thú vị bằng tiếng Việt. ${levelInstruction} Mở rộng từ lời giải thích ngắn gọn ban đầu: "${currentQuestion.explanation}". Sử dụng định dạng Markdown.`;
+            const prompt = `Hãy đóng vai một chuyên gia uyên bác. Dựa trên phát biểu sau: "${currentQuestion.statement}", hãy cung cấp một bài giải thích chi tiết, sâu sắc và thú vị bằng tiếng Việt. ${levelInstruction} Mở rộng từ lời giải thích ngắn gọn ban đầu: "${currentQuestion.explanation}". Sử dụng định dạng Markdown với các tiêu đề (###) để phân tách các ý chính.`;
             try {
                 const result = await chatModel.generateContent(prompt);
                 return result.response.text();
