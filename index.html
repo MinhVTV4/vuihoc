@@ -47,6 +47,43 @@
         .modal-content .markdown-content ul { list-style-position: inside; }
         .modal-content .markdown-content li { color: #475569; margin-bottom: 8px; }
         .dark .modal-content .markdown-content li { color: #94a3b8; }
+
+        /* ⭐ UPDATE: New styles for the explanation blocks */
+        .explanation-header {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+        .explanation-header.correct {
+            background-color: #16a34a; /* green-600 */
+        }
+        .explanation-header.incorrect {
+            background-color: #dc2626; /* red-600 */
+        }
+        .explanation-body ul {
+            list-style: none;
+            padding: 0;
+        }
+        .explanation-body li {
+            background-color: #f1f5f9; /* slate-100 */
+            border-left: 4px solid #4f46e5; /* indigo-600 */
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        .dark .explanation-body li {
+            background-color: #334155; /* slate-700 */
+            border-left-color: #818cf8; /* indigo-400 */
+        }
+        .dark .explanation-body li p {
+             color: #cbd5e1;
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-center min-h-screen p-4 transition-colors duration-500">
@@ -107,9 +144,9 @@
                     <h2 id="question-text" class="text-xl md:text-2xl text-center font-semibold">Đang tìm câu hỏi...</h2>
                     <div id="loading-spinner" class="spinner"></div>
                 </div>
-                <div id="explanation-container" class="text-slate-600 dark:text-slate-300 mt-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[50px] hidden">
-                    <div id="explanation-content" class="markdown-content"></div>
-                    <div class="flex justify-between items-center mt-4">
+                <div id="explanation-container" class="mt-4 hidden">
+                    <div id="explanation-content"></div>
+                    <div class="flex justify-between items-center mt-4 border-t border-slate-200 dark:border-slate-700 pt-4">
                         <button onclick="openLearnMoreModal()" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Tìm hiểu sâu hơn &rarr;</button>
                         <div id="vote-container" class="flex items-center space-x-4">
                             <span class="text-sm text-slate-500 dark:text-slate-400">Hữu ích?</span>
@@ -184,13 +221,12 @@
         const db = getFirestore(app);
         let textModel;
         
-        // ⭐ UPDATE: Updated schema for better explanation
         const questionSchema = {
             type: "OBJECT",
             properties: {
                 statement: { type: "STRING", description: "Phát biểu của câu đố." },
                 answer: { type: "BOOLEAN", description: "Đáp án, true cho 'Sự thật', false cho 'Hư cấu'." },
-                explanation: { type: "STRING", description: "Một bản tóm tắt giải thích chi tiết (5-10 dòng) bằng Markdown. Bắt đầu bằng một câu xác nhận, sau đó là 2-3 gạch đầu dòng (dùng '*') nêu các ý chính." },
+                explanation: { type: "STRING", description: "Một bản tóm tắt giải thích chi tiết (5-10 dòng) bằng Markdown, tập trung vào kiến thức. Sử dụng 2-3 gạch đầu dòng (dùng '*') để nêu các ý chính." },
                 subtopic: { type: "STRING", description: "Chủ đề con cụ thể của câu hỏi này, ví dụ: 'Lỗ đen'."}
             },
             required: ["statement", "answer", "explanation", "subtopic"]
@@ -413,7 +449,6 @@
                 ? `8.  **ĐỘC NHẤT TUYỆT ĐỐI:** Dưới đây là danh sách một số câu hỏi đã có sẵn. **TUYỆT ĐỐI KHÔNG** tạo lại các câu hỏi có cùng nội dung hoặc ý tưởng tương tự:\n- ${existingSamples.join('\n- ')}`
                 : '';
 
-            // ⭐ UPDATE: New, more detailed prompt for explanations
             const prompt = `Hãy đóng vai một nhà sản xuất game show kiến thức "Sự Thật hay Hư Cấu" cực kỳ sáng tạo.
 Nhiệm vụ của bạn là thiết kế một kịch bản hoàn chỉnh gồm ${TOTAL_QUESTIONS_PER_GAME} câu hỏi cho một tập phát sóng.
 **Yêu cầu KỊCH BẢN:**
@@ -424,7 +459,7 @@ Nhiệm vụ của bạn là thiết kế một kịch bản hoàn chỉnh gồm
 5.  **CHẤT LƯỢNG VƯỢT TRỘI:**
     * **Câu "Sự thật"** phải gây ngạc nhiên, đi ngược lại suy nghĩ thông thường.
     * **Câu "Hư cấu"** phải dựa trên một lầm tưởng phổ biến hoặc một sự thật bị bóp méo tinh vi để nghe cực kỳ hợp lý.
-6.  **GIẢI THÍCH CHẤT LƯỢNG:** Với mỗi câu hỏi, phần 'explanation' phải là một đoạn tóm tắt súc tích (5-10 dòng) bằng **Markdown**. Nó phải bắt đầu bằng một câu xác nhận đáp án, theo sau là **2-3 gạch đầu dòng (dùng dấu \`*\`)** nêu bật những sự thật thú vị hoặc lý do chính. Đây là bản tóm tắt cho lời giải thích sâu hơn.
+6.  **GIẢI THÍCH CHẤT LƯỢNG:** Với mỗi câu hỏi, phần 'explanation' phải là một đoạn tóm tắt súc tích (5-10 dòng) bằng **Markdown**, tập trung vào kiến thức. Sử dụng **2-3 gạch đầu dòng (dùng dấu \`*\`)** để nêu bật những sự thật thú vị hoặc lý do chính. Đây là bản tóm tắt cho lời giải thích sâu hơn.
 7.  **KHÔNG TRÙNG LẶP:** Đảm bảo 10 câu hỏi không trùng lặp về ý tưởng với nhau.
 ${uniquenessInstruction}
 Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công cụ \`create_quiz_game\` với kết quả của bạn.`;
@@ -701,10 +736,22 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             displayQuestion();
         }
         
+        // ⭐ UPDATE: New function for better explanation rendering
         function showExplanation() {
-            const prefix = currentQuestion.answer === true ? "### ✅ Đúng vậy, đó là Sự thật!" : "### ❌ Chính xác, đó là Hư cấu!";
-            const fullExplanation = `${prefix}\n\n${currentQuestion.explanation}`;
-            domElements.explanationContent.innerHTML = marked.parse(fullExplanation);
+            const isCorrect = currentQuestion.answer;
+            const headerText = isCorrect ? "✅ Đúng vậy, đó là Sự thật!" : "❌ Chính xác, đó là Hư cấu!";
+            const headerClass = isCorrect ? 'correct' : 'incorrect';
+
+            const explanationHTML = `
+                <div class="explanation-header ${headerClass}">
+                    ${headerText}
+                </div>
+                <div class="explanation-body markdown-content">
+                    ${marked.parse(currentQuestion.explanation)}
+                </div>
+            `;
+            
+            domElements.explanationContent.innerHTML = explanationHTML;
             domElements.explanationContainer.style.display = "block";
         }
         
