@@ -31,6 +31,22 @@
         .dark .modal-content { background: #1e293b; }
         .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #e2e8f0; border-radius: 9999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; }
         .dark .modal-close-btn { background: #334155; }
+        
+        .markdown-content h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; margin-top: 1rem; }
+        .dark .markdown-content h3 { color: inherit; }
+        .markdown-content ul { list-style-type: disc; padding-left: 20px; margin-top: 8px; }
+        .markdown-content li { margin-bottom: 4px; }
+        .markdown-content strong { color: #1e293b; }
+        .dark .markdown-content strong { color: #cbd5e1; }
+        .modal-content .markdown-content p { color: #334155; line-height: 1.6; }
+        .dark .modal-content .markdown-content p { color: #cbd5e1; }
+        .modal-content .markdown-content h3 { color: #4338ca; border-bottom: 2px solid #c7d2fe; padding-bottom: 4px; margin-top: 16px; }
+        .dark .modal-content .markdown-content h3 { color: #a5b4fc; border-bottom-color: #4f46e5; }
+        .modal-content .markdown-content strong { color: #4f46e5; }
+        .dark .modal-content .markdown-content strong { color: #c7d2fe; }
+        .modal-content .markdown-content ul { list-style-position: inside; }
+        .modal-content .markdown-content li { color: #475569; margin-bottom: 8px; }
+        .dark .modal-content .markdown-content li { color: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-center min-h-screen p-4 transition-colors duration-500">
@@ -54,13 +70,24 @@
                 </div>
 
                 <div id="level-selection-screen" class="hidden">
-                    <h2 class="text-xl font-semibold mb-6">Bước 2: Chọn trình độ</h2>
-                    <div class="space-y-4">
-                        <button onclick="selectLevel('easy')" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-green-500 text-white">Cấp 1 <span class="font-normal text-sm block">(6-10 tuổi)</span></button>
-                        <button onclick="selectLevel('medium')" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-blue-500 text-white">Phổ thông <span class="font-normal text-sm block">(Mọi lứa tuổi)</span></button>
-                        <button onclick="selectLevel('hard')" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-red-500 text-white">Chuyên sâu <span class="font-normal text-sm block">(Thử thách)</span></button>
+                    <div id="level-buttons-container">
+                        <h2 class="text-xl font-semibold mb-6">Bước 2: Chọn trình độ</h2>
+                        <div class="space-y-4">
+                            <button onclick="setLevelAndShowPlayModes('easy')" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-green-500 text-white">Cấp 1 <span class="font-normal text-sm block">(6-10 tuổi)</span></button>
+                            <button onclick="setLevelAndShowPlayModes('medium')" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-blue-500 text-white">Phổ thông <span class="font-normal text-sm block">(Mọi lứa tuổi)</span></button>
+                            <button onclick="setLevelAndShowPlayModes('hard')" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-red-500 text-white">Chuyên sâu <span class="font-normal text-sm block">(Thử thách)</span></button>
+                        </div>
+                        <button onclick="backToTopicSelection()" class="mt-6 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">&larr; Quay lại chọn chủ đề</button>
                     </div>
-                     <button onclick="backToTopicSelection()" class="mt-6 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">&larr; Quay lại chọn chủ đề</button>
+
+                    <div id="play-mode-container" class="hidden">
+                        <h2 class="text-xl font-semibold mb-6">Bước 3: Chọn chế độ chơi</h2>
+                        <div class="space-y-4">
+                            <button onclick="startGame(false)" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-sky-500 text-white">⚡ Chơi Nhanh <span class="font-normal text-sm block">(Ưu tiên ngân hàng câu hỏi)</span></button>
+                            <button onclick="startGame(true)" class="level-btn w-full text-lg font-bold py-4 px-6 rounded-lg bg-purple-600 text-white">🧠 Chơi Sáng Tạo <span class="font-normal text-sm block">(Luôn tạo câu hỏi mới từ AI)</span></button>
+                        </div>
+                        <button onclick="backToLevelSelection()" class="mt-6 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">&larr; Quay lại chọn trình độ</button>
+                    </div>
                 </div>
             </div>
 
@@ -144,27 +171,26 @@
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, setDoc, serverTimestamp, getDoc, increment, writeBatch, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
-  const firebaseConfig = {
-    apiKey: "AIzaSyAxIu9PQEEQie5oi8-9LhG9NMABHSgaVMM",
-    authDomain: "vuihoc-a0ef3.firebaseapp.com",
-    projectId: "vuihoc-a0ef3",
-    storageBucket: "vuihoc-a0ef3.firebasestorage.app",
-    messagingSenderId: "1070971370795",
-    appId: "1:1070971370795:web:5fe496f59365f67beed96e"
-  };
-
+            apiKey: "AIzaSyDQj9JpV0w3fbfLXWqEaeJ2QkAnnMyeCwU",
+            authDomain: "allinone-2b180.firebaseapp.com",
+            projectId: "allinone-2b180",
+            storageBucket: "allinone-2b180.firebasestorage.app",
+            messagingSenderId: "147236185680",
+            appId: "1:147236185680:web:dde77438ff630e3210d355"
+        };
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         let textModel;
         
+        // ⭐ UPDATE: Updated schema for better explanation
         const questionSchema = {
             type: "OBJECT",
             properties: {
                 statement: { type: "STRING", description: "Phát biểu của câu đố." },
                 answer: { type: "BOOLEAN", description: "Đáp án, true cho 'Sự thật', false cho 'Hư cấu'." },
-                explanation: { type: "STRING", description: "Lời giải thích ngắn gọn, hấp dẫn." },
+                explanation: { type: "STRING", description: "Một bản tóm tắt giải thích chi tiết (5-10 dòng) bằng Markdown. Bắt đầu bằng một câu xác nhận, sau đó là 2-3 gạch đầu dòng (dùng '*') nêu các ý chính." },
                 subtopic: { type: "STRING", description: "Chủ đề con cụ thể của câu hỏi này, ví dụ: 'Lỗ đen'."}
             },
             required: ["statement", "answer", "explanation", "subtopic"]
@@ -219,6 +245,8 @@
             startScreen: document.getElementById('start-screen'),
             topicSelectionScreen: document.getElementById('topic-selection-screen'),
             levelSelectionScreen: document.getElementById('level-selection-screen'),
+            levelButtonsContainer: document.getElementById('level-buttons-container'),
+            playModeContainer: document.getElementById('play-mode-container'),
             questionCard: document.getElementById('question-card'),
             questionText: document.getElementById('question-text'),
             questionNumberText: document.getElementById('question-number'),
@@ -292,6 +320,18 @@
             
             await batch.commit();
             console.log(`Đã lưu ${questions.length} câu hỏi mới và gán ID.`);
+
+            if (questions.length > 0 && topic.id !== 'random') {
+                const countKey = `${topic.id}_${level}`;
+                const metadataRef = doc(db, '_metadata', 'questionCounts');
+                try {
+                    await setDoc(metadataRef, { [countKey]: increment(questions.length) }, { merge: true });
+                    console.log(`Metadata updated: ${countKey} incremented by ${questions.length}`);
+                } catch(error) {
+                    console.error("Lỗi khi cập nhật metadata:", error);
+                }
+            }
+
             return questionsWithIds;
         }
 
@@ -328,7 +368,28 @@
             }
         }
         
-        async function generateFullGameSession(topic, level) {
+        async function getExistingQuestionSamples(topic, level, count = 25) {
+            if (topic.id === 'random') return [];
+            const collectionName = `${topic.id}_questions`;
+            const q = query(collection(db, collectionName), where("level", "==", level), limit(count * 2));
+            try {
+                const querySnapshot = await getDocs(q);
+                const statements = [];
+                querySnapshot.forEach(doc => {
+                    statements.push(doc.data().statement);
+                });
+                for (let i = statements.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [statements[i], statements[j]] = [statements[j], statements[i]];
+                }
+                return statements.slice(0, count);
+            } catch (error) {
+                console.error("Lỗi khi lấy mẫu câu hỏi:", error);
+                return [];
+            }
+        }
+
+        async function generateFullGameSession(topic, level, existingSamples = []) {
             let levelDescription = '';
             switch(level) {
                 case 'easy': levelDescription = 'dễ, phù hợp cho trẻ em 6-10 tuổi'; break;
@@ -347,18 +408,25 @@
             }
            
             const subtopicsString = selectedSubtopics.join(', ');
+            
+            const uniquenessInstruction = existingSamples.length > 0
+                ? `8.  **ĐỘC NHẤT TUYỆT ĐỐI:** Dưới đây là danh sách một số câu hỏi đã có sẵn. **TUYỆT ĐỐI KHÔNG** tạo lại các câu hỏi có cùng nội dung hoặc ý tưởng tương tự:\n- ${existingSamples.join('\n- ')}`
+                : '';
 
+            // ⭐ UPDATE: New, more detailed prompt for explanations
             const prompt = `Hãy đóng vai một nhà sản xuất game show kiến thức "Sự Thật hay Hư Cấu" cực kỳ sáng tạo.
 Nhiệm vụ của bạn là thiết kế một kịch bản hoàn chỉnh gồm ${TOTAL_QUESTIONS_PER_GAME} câu hỏi cho một tập phát sóng.
 **Yêu cầu KỊCH BẢN:**
 1.  **Chủ Đề Chính:** ${topic.prompt}.
 2.  **Trình Độ:** ${levelDescription}.
-3.  **ĐA DẠNG TUYỆT ĐỐI:** ${subtopicsString ? `Tạo mỗi câu hỏi dựa trên một trong các chủ đề con sau: ${subtopicsString}. **KHÔNG được lặp lại chủ đề con.** Mỗi câu phải khai thác một khía cạnh hoàn toàn khác nhau.` : 'Tạo các câu hỏi thật đa dạng trong chủ đề chính.'}
+3.  **ĐA DẠNG TUYỆT ĐỐI:** ${subtopicsString ? `Tạo mỗi câu hỏi dựa trên một trong các chủ đề con sau: ${subtopicsString}. **KHÔNG được lặp lại chủ đề con.**` : 'Tạo các câu hỏi thật đa dạng trong chủ đề chính.'}
 4.  **CÂN BẰNG HOÀN HẢO:** Bộ đề phải có tỉ lệ gần bằng nhau giữa câu "Sự thật" và "Hư cấu".
 5.  **CHẤT LƯỢNG VƯỢT TRỘI:**
     * **Câu "Sự thật"** phải gây ngạc nhiên, đi ngược lại suy nghĩ thông thường.
     * **Câu "Hư cấu"** phải dựa trên một lầm tưởng phổ biến hoặc một sự thật bị bóp méo tinh vi để nghe cực kỳ hợp lý.
-6.  **KHÔNG TRÙNG LẶP:** Đảm bảo 10 câu hỏi không trùng lặp về ý tưởng với nhau.
+6.  **GIẢI THÍCH CHẤT LƯỢNG:** Với mỗi câu hỏi, phần 'explanation' phải là một đoạn tóm tắt súc tích (5-10 dòng) bằng **Markdown**. Nó phải bắt đầu bằng một câu xác nhận đáp án, theo sau là **2-3 gạch đầu dòng (dùng dấu \`*\`)** nêu bật những sự thật thú vị hoặc lý do chính. Đây là bản tóm tắt cho lời giải thích sâu hơn.
+7.  **KHÔNG TRÙNG LẶP:** Đảm bảo 10 câu hỏi không trùng lặp về ý tưởng với nhau.
+${uniquenessInstruction}
 Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công cụ \`create_quiz_game\` với kết quả của bạn.`;
 
             try {
@@ -388,21 +456,35 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             }
         }
 
-        async function startGame() {
+        async function startGame(forceAI = false) {
+            domElements.startScreen.style.display = 'none';
+            domElements.gameUI.style.display = 'block';
+            
             currentQuestionIndex = 0;
             score = 0;
             currentGameSession = [];
             updateScore();
             
-            showLoading(true, `Đang tìm câu hỏi...`);
+            showLoading(true, `Đang chuẩn bị bộ đề...`);
 
             currentTopicForGame = selectedTopic.id === 'random' ? topics[Math.floor(Math.random() * (topics.length - 1)) + 1] : selectedTopic;
             
-            let questions = await getQuestionsFromCache(currentTopicForGame, selectedLevel);
+            const displayTopicName = currentTopicForGame.name;
+            domElements.gameTitle.textContent = `Chủ đề: ${displayTopicName} - ${levelNames[selectedLevel]}`; 
 
+            let questions = [];
+
+            if (!forceAI) {
+                questions = await getQuestionsFromCache(currentTopicForGame, selectedLevel);
+            }
+            
             if (questions.length < TOTAL_QUESTIONS_PER_GAME) {
-                showLoading(true, `Cache không đủ, đang nhờ AI tạo bộ đề mới...`);
-                const newQuestionsFromAI = await generateFullGameSession(currentTopicForGame, selectedLevel);
+                const loadingMessage = forceAI ? `Đang nhờ AI tạo bộ đề sáng tạo...` : `Cache không đủ, đang nhờ AI tạo bộ đề mới...`;
+                showLoading(true, loadingMessage);
+                
+                const samples = forceAI ? await getExistingQuestionSamples(currentTopicForGame, selectedLevel) : [];
+                const newQuestionsFromAI = await generateFullGameSession(currentTopicForGame, selectedLevel, samples);
+
                 if (newQuestionsFromAI && newQuestionsFromAI.length > 0) {
                     questions = await cacheAndGetIdsForNewQuestions(newQuestionsFromAI, currentTopicForGame, selectedLevel);
                 }
@@ -470,7 +552,7 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             }
         }
         
-        window.openTopQuestionsModal = () => {
+        function openTopQuestionsModal() {
             domElements.topQuestionsModal.classList.add('active');
             domElements.topQuestionsContent.style.display = 'none';
             domElements.topQuestionsTopicSelection.style.display = 'block';
@@ -483,12 +565,17 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
                     domElements.topQuestionsTopicsList.appendChild(button);
                 });
             }
-        };
-        window.closeTopQuestionsModal = () => domElements.topQuestionsModal.classList.remove('active');
-        window.backToTopTopicSelection = () => {
+        }
+
+        function closeTopQuestionsModal() {
+            domElements.topQuestionsModal.classList.remove('active');
+        }
+
+        function backToTopTopicSelection() {
              domElements.topQuestionsContent.style.display = 'none';
              domElements.topQuestionsTopicSelection.style.display = 'block';
-        };
+        }
+
         async function selectTopQuestionTopic(topic) {
             domElements.topQuestionsTopicSelection.style.display = 'none';
             domElements.topQuestionsContent.style.display = 'block';
@@ -515,9 +602,9 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
                         <p class="text-sm mt-1">👍 ${data.likes || 0} Lượt thích</p>
                         <details class="mt-2 text-sm">
                             <summary class="cursor-pointer text-indigo-600 dark:text-indigo-400">Xem đáp án & giải thích</summary>
-                            <div class="mt-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-md">
+                            <div class="mt-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-md markdown-content">
                                 <p><strong>Đáp án:</strong> ${data.answer ? 'Sự thật' : 'Hư cấu'}</p>
-                                <p class="mt-1">${data.explanation}</p>
+                                <div class="mt-1">${marked.parse(data.explanation)}</div>
                             </div>
                         </details>
                     `;
@@ -556,40 +643,44 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             hard: 'Chuyên sâu' 
         };
         
-        window.backToMenu = () => {
+        function backToMenu() {
             domElements.gameUI.style.display = 'none';
             domElements.finalScoreScreen.style.display = 'none';
             domElements.startScreen.style.display = 'block';
             domElements.levelSelectionScreen.style.display = 'none';
             domElements.topicSelectionScreen.style.display = 'block';
-        };
+        }
         
-        window.selectTopic = (id) => { 
+        function selectTopic(id) { 
             selectedTopic = topics.find(t => t.id === id); 
             domElements.topicSelectionScreen.style.display = 'none'; 
             domElements.levelSelectionScreen.style.display = 'block'; 
-        };
+            domElements.playModeContainer.style.display = 'none';
+            domElements.levelButtonsContainer.style.display = 'block';
+        }
+
+        function setLevelAndShowPlayModes(level) {
+            selectedLevel = level;
+            domElements.levelButtonsContainer.style.display = 'none';
+            domElements.playModeContainer.style.display = 'block';
+        }
+
+        function backToLevelSelection() {
+            domElements.playModeContainer.style.display = 'none';
+            domElements.levelButtonsContainer.style.display = 'block';
+        }
         
-        window.selectLevel = (level) => { 
-            selectedLevel = level; 
-            domElements.startScreen.style.display = 'none'; 
-            domElements.gameUI.style.display = 'block'; 
-            const displayTopicName = selectedTopic.id === 'random' ? 'Ngẫu nhiên' : selectedTopic.name;
-            domElements.gameTitle.textContent = `Chủ đề: ${displayTopicName} - ${levelNames[level]}`; 
-            startGame(); 
-        };
-        
-        window.backToTopicSelection = () => { 
+        function backToTopicSelection() { 
             domElements.levelSelectionScreen.style.display = 'none'; 
             domElements.topicSelectionScreen.style.display = 'block'; 
-        };
+        }
         
-        window.resetGame = function() { 
+        function resetGame() { 
             domElements.finalScoreScreen.style.display = 'none'; 
             backToMenu(); 
-        };
+        }
         
-        window.checkAnswer = function(userAnswer) {
+        function checkAnswer(userAnswer) {
             if (!currentQuestion) return;
             domElements.trueBtn.style.display = 'none';
             domElements.falseBtn.style.display = 'none';
@@ -603,12 +694,12 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             }
             updateScore();
             showExplanation();
-        };
+        }
         
-        window.goToNextQuestion = function() {
+        function goToNextQuestion() {
             currentQuestionIndex++;
             displayQuestion();
-        };
+        }
         
         function showExplanation() {
             const prefix = currentQuestion.answer === true ? "### ✅ Đúng vậy, đó là Sự thật!" : "### ❌ Chính xác, đó là Hư cấu!";
@@ -637,26 +728,27 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             domElements.finalMessage.textContent = message;
         }
         
-        window.openLearnMoreModal = async() => {
+        function openLearnMoreModal() {
             domElements.learnMoreModal.classList.add("active");
             domElements.modalContentArea.innerHTML="";
             domElements.modalSpinner.style.display="flex";
-            const detailedExplanation = await generateDetailedExplanation(selectedLevel);
-            domElements.modalSpinner.style.display="none";
-            if(detailedExplanation){
-                domElements.modalContentArea.innerHTML=marked.parse(detailedExplanation)
-            } else {
-                domElements.modalContentArea.innerHTML=`
-                    <div class="text-center">
-                        <p class="text-red-500 font-semibold">Rất tiếc, không thể tạo nội dung.</p>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Đã có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.</p>
-                        <button onclick="openLearnMoreModal()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold">
-                            Thử lại
-                        </button>
-                    </div>
-                `;
-            }
-        };
+            generateDetailedExplanation(selectedLevel).then(detailedExplanation => {
+                domElements.modalSpinner.style.display="none";
+                if(detailedExplanation){
+                    domElements.modalContentArea.innerHTML=marked.parse(detailedExplanation)
+                } else {
+                    domElements.modalContentArea.innerHTML=`
+                        <div class="text-center">
+                            <p class="text-red-500 font-semibold">Rất tiếc, không thể tạo nội dung.</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Đã có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.</p>
+                            <button onclick="openLearnMoreModal()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold">
+                                Thử lại
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+        }
         
         async function generateDetailedExplanation(level) {
             if (!textModel || !currentQuestion) return null;
@@ -672,6 +764,7 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
                 default:
                     levelInstruction = 'Hãy giải thích một cách rõ ràng, mạch lạc cho đối tượng phổ thông, cung cấp thêm các thông tin thú vị và mở rộng kiến thức.';
                     break;
+
             }
 
             const chatModel = getGenerativeModel(getAI(app,{backend:new GoogleAIBackend}),{model:"gemini-2.5-flash"});
@@ -685,9 +778,25 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             }
         }
         
-        window.closeLearnMoreModal = () => {
+        function closeLearnMoreModal() {
             domElements.learnMoreModal.classList.remove('active');
-        };
+        }
+        
+        window.openTopQuestionsModal = openTopQuestionsModal;
+        window.closeTopQuestionsModal = closeTopQuestionsModal;
+        window.backToTopTopicSelection = backToTopTopicSelection;
+        window.selectTopQuestionTopic = selectTopQuestionTopic;
+        window.backToMenu = backToMenu;
+        window.selectTopic = selectTopic;
+        window.setLevelAndShowPlayModes = setLevelAndShowPlayModes;
+        window.backToLevelSelection = backToLevelSelection;
+        window.backToTopicSelection = backToTopicSelection;
+        window.startGame = startGame;
+        window.checkAnswer = checkAnswer;
+        window.goToNextQuestion = goToNextQuestion;
+        window.resetGame = resetGame;
+        window.openLearnMoreModal = openLearnMoreModal;
+        window.closeLearnMoreModal = closeLearnMoreModal;
         
         function completeInit() {
             topics.forEach(topic => {
@@ -699,6 +808,9 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             });
             domElements.learnMoreModal.addEventListener('click', (event) => {
                 if (event.target === domElements.learnMoreModal) closeLearnMoreModal();
+            });
+             domElements.topQuestionsModal.addEventListener('click', (event) => {
+                if (event.target === domElements.topQuestionsModal) closeTopQuestionsModal();
             });
             initAuth();
         }
