@@ -48,7 +48,6 @@
         .modal-content .markdown-content li { color: #475569; margin-bottom: 8px; }
         .dark .modal-content .markdown-content li { color: #94a3b8; }
 
-        /* ⭐ UPDATE: New styles for the explanation blocks */
         .explanation-header {
             padding: 12px;
             border-radius: 8px;
@@ -69,20 +68,23 @@
             list-style: none;
             padding: 0;
         }
+        /* ⭐ UPDATE: New styles for explanation cards */
         .explanation-body li {
-            background-color: #f1f5f9; /* slate-100 */
-            border-left: 4px solid #4f46e5; /* indigo-600 */
-            padding: 12px;
+            background-color: #fefce8; /* yellow-50 (paper-like) */
+            border-left: 4px solid #f97316; /* orange-500 */
+            padding: 12px 16px;
             border-radius: 6px;
             margin-bottom: 8px;
             line-height: 1.6;
+            color: #3f3f46; /* zinc-700 */
         }
         .dark .explanation-body li {
-            background-color: #334155; /* slate-700 */
-            border-left-color: #818cf8; /* indigo-400 */
+            background-color: #27211a; /* Darker, warmer paper */
+            border-left-color: #fb923c; /* orange-400 */
+            color: #d4d4d8; /* zinc-300 */
         }
         .dark .explanation-body li p {
-             color: #cbd5e1;
+             color: #d4d4d8; /* zinc-300 */
         }
     </style>
 </head>
@@ -147,7 +149,8 @@
                 <div id="explanation-container" class="mt-4 hidden">
                     <div id="explanation-content"></div>
                     <div class="flex justify-between items-center mt-4 border-t border-slate-200 dark:border-slate-700 pt-4">
-                        <button onclick="openLearnMoreModal()" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Tìm hiểu sâu hơn &rarr;</button>
+                        <!-- ⭐ UPDATE: Changed link color to red -->
+                        <button onclick="openLearnMoreModal()" class="text-sm font-semibold text-red-600 dark:text-red-500 hover:underline">Tìm hiểu sâu hơn &rarr;</button>
                         <div id="vote-container" class="flex items-center space-x-4">
                             <span class="text-sm text-slate-500 dark:text-slate-400">Hữu ích?</span>
                             <button id="like-btn" class="vote-btn text-2xl text-slate-400 hover:text-green-500">👍</button>
@@ -736,11 +739,10 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             displayQuestion();
         }
         
-        // ⭐ UPDATE: New function for better explanation rendering
         function showExplanation() {
-            const isCorrect = currentQuestion.answer;
-            const headerText = isCorrect ? "✅ Đúng vậy, đó là Sự thật!" : "❌ Chính xác, đó là Hư cấu!";
-            const headerClass = isCorrect ? 'correct' : 'incorrect';
+            const isCorrectAnswer = currentQuestion.answer;
+            const headerText = isCorrectAnswer ? "✅ Đúng vậy, đó là Sự thật!" : "❌ Chính xác, đó là Hư cấu!";
+            const headerClass = isCorrectAnswer ? 'correct' : 'incorrect';
 
             const explanationHTML = `
                 <div class="explanation-header ${headerClass}">
