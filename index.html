@@ -351,8 +351,7 @@
         }
 
         async function getQuestionsFromCache(topic, level) {
-            if (topic.id === 'random') return [];
-            console.log(`Đang tìm ${TOTAL_QUESTIONS_PER_GAME} câu hỏi chưa chơi trong cache...`);
+            console.log(`Đang tìm ${TOTAL_QUESTIONS_PER_GAME} câu hỏi chưa chơi trong cache cho chủ đề: ${topic.id}...`);
             const collectionName = `${topic.id}_questions`;
             const q = query(collection(db, collectionName), where("level", "==", level));
             
@@ -384,7 +383,6 @@
         }
         
         async function getExistingQuestionSamples(topic, level, count = 25) {
-            if (topic.id === 'random') return [];
             const collectionName = `${topic.id}_questions`;
             const q = query(collection(db, collectionName), where("level", "==", level), limit(count * 2));
             try {
@@ -412,23 +410,41 @@
                 default: levelDescription = 'phổ thông, phù hợp với mọi lứa tuổi'; break;
             }
 
-            let subtopicPool = [...(topic.subtopics || [])];
-            let selectedSubtopics = [];
-            if (topic.id !== 'random' && subtopicPool.length > 0) {
-                 for (let i = 0; i < TOTAL_QUESTIONS_PER_GAME; i++) {
-                    if (subtopicPool.length === 0) subtopicPool = [...(topic.subtopics)];
-                    const randomIndex = Math.floor(Math.random() * subtopicPool.length);
-                    selectedSubtopics.push(subtopicPool.splice(randomIndex, 1)[0]);
-                }
-            }
-           
-            const subtopicsString = selectedSubtopics.join(', ');
-            
+            let prompt;
+
             const uniquenessInstruction = existingSamples.length > 0
                 ? `8.  **ĐỘC NHẤT TUYỆT ĐỐI:** Dưới đây là danh sách một số câu hỏi đã có sẵn. **TUYỆT ĐỐI KHÔNG** tạo lại các câu hỏi có cùng nội dung hoặc ý tưởng tương tự:\n- ${existingSamples.join('\n- ')}`
                 : '';
-
-            const prompt = `Hãy đóng vai một nhà sản xuất game show kiến thức "Sự Thật hay Hư Cấu" cực kỳ sáng tạo.
+            
+            // ⭐ UPDATE: Logic tạo prompt được tách riêng cho chủ đề ngẫu nhiên và chủ đề cụ thể
+            if (topic.id === 'random') {
+                const allTopicNames = topics.filter(t => t.id !== 'random').map(t => `'${t.name}'`).join(', ');
+                prompt = `Hãy đóng vai một nhà sản xuất game show kiến thức "Sự Thật hay Hư Cấu" cực kỳ sáng tạo.
+Nhiệm vụ của bạn là thiết kế một kịch bản hoàn chỉnh gồm ${TOTAL_QUESTIONS_PER_GAME} câu hỏi cho một tập phát sóng ĐẶC BIỆT với chủ đề "NGẪU NHIÊN TỔNG HỢP".
+**Yêu cầu KỊCH BẢN:**
+1.  **ĐA DẠNG TUYỆT ĐỐI:** Tạo ${TOTAL_QUESTIONS_PER_GAME} câu hỏi từ nhiều lĩnh vực khác nhau nhất có thể. Lấy cảm hứng từ các chủ đề như: ${allTopicNames}. **MỖI CÂU HỎI PHẢI THUỘC MỘT CHỦ ĐỀ KHÁC NHAU.**
+2.  **Trình Độ:** ${levelDescription}.
+3.  **CÂN BẰNG HOÀN HẢO:** Bộ đề phải có tỉ lệ gần bằng nhau giữa câu "Sự thật" và "Hư cấu".
+4.  **CHẤT LƯỢNG VƯỢT TRỘI:**
+    * **Câu "Sự thật"** phải gây ngạc nhiên, đi ngược lại suy nghĩ thông thường.
+    * **Câu "Hư cấu"** phải dựa trên một lầm tưởng phổ biến hoặc một sự thật bị bóp méo tinh vi để nghe cực kỳ hợp lý.
+5.  **GIẢI THÍCH CHẤT LƯỢNG:** Với mỗi câu hỏi, phần 'explanation' phải là một đoạn tóm tắt súc tích (5-10 dòng) bằng **Markdown**, tập trung vào kiến thức. Sử dụng **2-3 gạch đầu dòng (dùng dấu \`*\`)** để nêu bật những sự thật thú vị hoặc lý do chính.
+6.  **KHÔNG TRÙNG LẶP:** Đảm bảo ${TOTAL_QUESTIONS_PER_GAME} câu hỏi không trùng lặp về ý tưởng với nhau.
+${uniquenessInstruction.replace('8.','7.')}
+Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công cụ \`create_quiz_game\` với kết quả của bạn.`;
+            } else {
+                let subtopicPool = [...(topic.subtopics || [])];
+                let selectedSubtopics = [];
+                if (subtopicPool.length > 0) {
+                     for (let i = 0; i < TOTAL_QUESTIONS_PER_GAME; i++) {
+                        if (subtopicPool.length === 0) subtopicPool = [...(topic.subtopics)];
+                        const randomIndex = Math.floor(Math.random() * subtopicPool.length);
+                        selectedSubtopics.push(subtopicPool.splice(randomIndex, 1)[0]);
+                    }
+                }
+                const subtopicsString = selectedSubtopics.join(', ');
+                
+                prompt = `Hãy đóng vai một nhà sản xuất game show kiến thức "Sự Thật hay Hư Cấu" cực kỳ sáng tạo.
 Nhiệm vụ của bạn là thiết kế một kịch bản hoàn chỉnh gồm ${TOTAL_QUESTIONS_PER_GAME} câu hỏi cho một tập phát sóng.
 **Yêu cầu KỊCH BẢN:**
 1.  **Chủ Đề Chính:** ${topic.prompt}.
@@ -442,6 +458,7 @@ Nhiệm vụ của bạn là thiết kế một kịch bản hoàn chỉnh gồm
 7.  **KHÔNG TRÙNG LẶP:** Đảm bảo 10 câu hỏi không trùng lặp về ý tưởng với nhau.
 ${uniquenessInstruction}
 Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công cụ \`create_quiz_game\` với kết quả của bạn.`;
+            }
 
             try {
                 const result = await textModel.generateContent(prompt);
@@ -474,7 +491,6 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             domElements.startScreen.style.display = 'none';
             domElements.gameUI.style.display = 'block';
             
-            // ⭐ FIX: Hide explanation from previous game session
             domElements.explanationContainer.style.display = 'none';
 
             currentQuestionIndex = 0;
@@ -484,7 +500,9 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
             
             showLoading(true, `Đang chuẩn bị bộ đề...`);
 
-            currentTopicForGame = selectedTopic.id === 'random' ? topics[Math.floor(Math.random() * (topics.length - 1)) + 1] : selectedTopic;
+            // ⭐ UPDATE: Logic chọn chủ đề được đơn giản hóa. 
+            // Chủ đề "Ngẫu nhiên" sẽ được xử lý ở các bước sau.
+            currentTopicForGame = selectedTopic;
             
             const displayTopicName = currentTopicForGame.name;
             domElements.gameTitle.textContent = `Chủ đề: ${displayTopicName} - ${levelNames[selectedLevel]}`; 
@@ -499,7 +517,7 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
                 const loadingMessage = forceAI ? `Đang nhờ AI tạo bộ đề sáng tạo...` : `Cache không đủ, đang nhờ AI tạo bộ đề mới...`;
                 showLoading(true, loadingMessage);
                 
-                const samples = forceAI ? await getExistingQuestionSamples(currentTopicForGame, selectedLevel) : [];
+                const samples = await getExistingQuestionSamples(currentTopicForGame, selectedLevel);
                 const newQuestionsFromAI = await generateFullGameSession(currentTopicForGame, selectedLevel, samples);
 
                 if (newQuestionsFromAI && newQuestionsFromAI.length > 0) {
@@ -871,4 +889,3 @@ Hãy tạo ra một bộ đề thật "hack não" và thú vị! Gọi công c�
     </script>
 </body>
 </html>
-
